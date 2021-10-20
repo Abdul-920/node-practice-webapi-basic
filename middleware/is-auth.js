@@ -7,10 +7,12 @@ module.exports = (req, res, next) => {
     error.statusCode = 401;
     throw error;
   }
-  const token = authHeader.split(' ')[1];
+  console.log(authHeader);
+  const token = authHeader.split(' ')[1];//.slice(0, -1);
+  console.log(token);
   let decodedToken;
   try {
-    decodedToken = jwt.verify(token, 'somesupersecretsecret');
+    decodedToken = jwt.verify(token, process.env.JWT_SECRET);
   } catch (err) {
     err.statusCode = 500;
     throw err;

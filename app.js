@@ -1,3 +1,5 @@
+require('dotenv').config({path: __dirname + '/.env'})
+
 const path = require('path');
 
 const express = require('express');
@@ -5,8 +7,10 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
 
-const feedRoutes = require('./routes/feed');
+const apiDocRoute = require('./routes/docs')
 const authRoutes = require('./routes/auth');
+const feedRoutes = require('./routes/feed');
+const familyRoutes = require('./routes/family');
 
 const app = express();
 
@@ -48,11 +52,13 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/feed', feedRoutes);
+app.use('/api-docs', apiDocRoute);
 app.use('/auth', authRoutes);
+app.use('/feed', feedRoutes);
+app.use('/family', familyRoutes);
+
 
 app.use((error, req, res, next) => {
-  console.log(error);
   const status = error.statusCode || 500;
   const message = error.message;
   const data = error.data;
@@ -60,10 +66,12 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-  .connect(
-    'mongodb+srv://maximilian:9u4biljMQc4jjqbe@cluster0-ntrwp.mongodb.net/messages?retryWrites=true'
-  )
-  .then(result => {
-    app.listen(8080);
+  .connect("mongodb+srv://AbdulSamad:FRKZCzesJNFYZ6rG@mobileappcluster.u7sel.mongodb.net/Usrati?retryWrites=true&w=majority", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
   })
-  .catch(err => console.log(err));
+  .then(result => {
+    console.log('Connection Established With Mongoose')
+    app.listen(3000);
+  })
+  .catch(err => console.log('Error Establishing Connection With Mongoose', err));
