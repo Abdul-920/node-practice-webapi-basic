@@ -3,9 +3,9 @@ const path = require('path');
 
 const { validationResult } = require('express-validator/check');
 
-const Post = require('../models/post');
-const User = require('../models/user');
-const Family = require('../models/family');
+const Post = require('../models/post.model');
+const { User } = require('../models');
+const Family = require('../models/family.model');
 
 exports.getPosts = (req, res, next) => {
   const currentPage = req.query.page || 1;

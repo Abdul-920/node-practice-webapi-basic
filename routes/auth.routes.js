@@ -1,27 +1,15 @@
 const express = require("express");
 const { body } = require("express-validator/check");
 
-const User = require("../models/user");
+const { User } = require("../models");
 const { authController } = require('../controllers');
+const { authValidation } = require('../validations');
 
 const router = express.Router();
 
 router.put(
   "/signup",
-  [
-    body("email")
-      .isEmail()
-      .withMessage("Please enter a valid email.")
-      .custom((value, { req }) => {
-        return User.findOne({ email: value }).then((userDoc) => {
-          if (userDoc) {
-            return Promise.reject("E-Mail address already exists!");
-          }
-        });
-      }),
-    body("password").trim().isLength({ min: 8 }),
-    body("name").trim().not().isEmpty(),
-  ],
+  authValidation.signUp,
   authController.signup
 );
 
@@ -32,11 +20,12 @@ router.post(
   authController.forgotPassword
 );
 
-// router.post('/verify-email', validate(authValidation.verifyEmail), authController.verifyEmail);
+
 //router.post('/reset-password', authController.resetPassword);
 // router.post('/logout', validate(authValidation.logout), authController.logout);
 // router.post('/refresh-tokens', validate(authValidation.refreshTokens), authController.refreshTokens);
 // router.post('/send-verification-email', auth(), authController.sendVerificationEmail);
+router.post('/verify-email', authValidation.verifyEmail , authController.verifyEmail);
 
 module.exports = router;
 

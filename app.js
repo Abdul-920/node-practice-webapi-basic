@@ -8,9 +8,9 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 
 const apiDocRoute = require('./routes/docs')
-const authRoutes = require('./routes/auth');
-const feedRoutes = require('./routes/feed');
-const familyRoutes = require('./routes/family');
+const authRoutes = require('./routes/auth.routes');
+const feedRoutes = require('./routes/feed.routes');
+const familyRoutes = require('./routes/family.routes');
 
 const app = express();
 
@@ -57,8 +57,10 @@ app.use('/auth', authRoutes);
 app.use('/feed', feedRoutes);
 app.use('/family', familyRoutes);
 
-
+// its a special middleware that triggers when next(error) is called. It skips all the other middleware in between
+// inside async code we use next(new error) while in sync code just throw new error
 app.use((error, req, res, next) => {
+  console.log('I am in error handling middleware');
   const status = error.statusCode || 500;
   const message = error.message;
   const data = error.data;

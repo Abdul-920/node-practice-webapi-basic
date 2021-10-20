@@ -1,8 +1,8 @@
 const { validationResult } = require("express-validator/check");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const User = require("../models/user");
-const { emailService } = require("../services");
+const { User } = require("../models");
+const { emailService, authService } = require("../services");
 
 exports.signup = (req, res, next) => {
   const errors = validationResult(req);
@@ -119,4 +119,10 @@ exports.forgotPassword = async (req, res, next) => {
     next(error);
     console.log("next", e);
   }
+};
+
+exports.verifyEmail = async (req, res) => {
+  console.log('req.query.token in auth.controller', req.query.token)
+  await authService.verifyEmail(req.query.token);
+  res.status(200).send();
 };

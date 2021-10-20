@@ -3,8 +3,8 @@ const path = require('path');
 
 const { validationResult } = require('express-validator/check');
 
-const Post = require('../models/post');
-const User = require('../models/user');
+const { Post } = require('../models');
+const { User } = require('../models');
 
 exports.getPosts = (req, res, next) => {
   const currentPage = req.query.page || 1;
