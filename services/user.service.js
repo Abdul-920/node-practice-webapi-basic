@@ -1,6 +1,13 @@
-const httpStatus = require('http-status');
-const { User } = require('../models');
-const ApiError = require('../utils/ApiError');
+const httpStatus = require("http-status");
+const { User } = require("../models");
+const ApiError = require("../utils/ApiError");
+const bcrypt = require("bcryptjs");
+/**
+ * Check if email is taken
+ * @param {string} email - The user's email
+ * @param {ObjectId} [excludeUserId] - The id of the user to be excluded
+ * @returns {Promise<boolean>}
+ */
 
 /**
  * Create a user
@@ -8,9 +15,20 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<User>}
  */
 const createUser = async (userBody) => {
-  if (await User.isEmailTaken(userBody.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+  const name = userBody.name;
+  const email = userBody.email;
+  const password = userBody.password;
+
+  if (await getUserByEmail(email)) {
+    console.log("Email already taken in user.service");
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email already taken");
   }
+
+  const hashedPw = await bcrypt.hash(password, 12);
+  userBody.password = hashedPw;
+
+
+  console.log("Create new user in user.service", userBody);
   return User.create(userBody);
 };
 
@@ -55,10 +73,10 @@ const getUserByEmail = async (email) => {
 const updateUserById = async (userId, updateBody) => {
   const user = await getUserById(userId);
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
   if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email already taken");
   }
   Object.assign(user, updateBody);
   await user.save();
@@ -73,7 +91,7 @@ const updateUserById = async (userId, updateBody) => {
 const deleteUserById = async (userId) => {
   const user = await getUserById(userId);
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
   await user.remove();
   return user;

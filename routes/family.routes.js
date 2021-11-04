@@ -2,34 +2,26 @@ const express = require('express');
 const { body } = require('express-validator/check');
 
 const familyController = require('../controllers/family.controller');
-const isAuth = require('../middleware/is-auth');
-
+// const isAuth = require('../middleware/is-auth');
+const isAuth = require('../middleware/auth');
 const router = express.Router();
 
 // GET /family
-router.get('/posts', isAuth, familyController.getPosts);
+router.get('/posts', familyController.getPosts);
 
 // POST /family/create
-router.post(
-  '/',
-  isAuth,
-  familyController.createPost
-);
+router.post('/', familyController.createPost);
 
-router.get('/post/:postId', isAuth, familyController.getPost);
+router.get('/post/:postId', familyController.getPost);
 
-router.put(
-  '/post/:postId',
-  isAuth,
-  [
+router.put('/post/:postId', [
     body('title')
       .trim()
       .isLength({ min: 5 }),
     body('content')
       .trim()
       .isLength({ min: 5 })
-  ],
-  familyController.updatePost
+  ], familyController.updatePost
 );
 
 router.delete('/post/:postId', isAuth, familyController.deletePost);

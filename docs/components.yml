@@ -3,9 +3,11 @@ components:
     User:
       type: object
       properties:
-        userRole:
+        role:
           type: string
           enum: [Parent, Child]
+        isEmailVerified:
+          type: boolean
         _id:
           type: string
         email:
@@ -20,7 +22,7 @@ components:
         updatedAt:
           type: datetime
       example:
-        userRole: Parent
+        role: Parent
         _id: 5ebac534954b54139806c112
         email: fake@example.com
         name: fake name

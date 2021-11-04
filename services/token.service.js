@@ -52,6 +52,7 @@ const saveToken = async (token, userId, expires, type, blacklisted = false) => {
  * @returns {Promise<Token>}
  */
 const verifyToken = async (token, type) => {
+  console.log("verifyToken in token.service");
   const payload = jwt.verify(token, config.jwt.secret);
   const tokenDoc = await Token.findOne({ token, type, user: payload.sub, blacklisted: false });
   if (!tokenDoc) {
@@ -66,11 +67,16 @@ const verifyToken = async (token, type) => {
  * @returns {Promise<Object>}
  */
 const generateAuthTokens = async (user) => {
+  console.log('Generate Auth Token in token.service');
+
   const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
-  const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS);
+  console.log(moment(), accessTokenExpires, moment().unix(), accessTokenExpires.unix());
+  const accessToken = generateToken(user._id, accessTokenExpires, tokenTypes.ACCESS);
 
   const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
-  const refreshToken = generateToken(user.id, refreshTokenExpires, tokenTypes.REFRESH);
+  const refreshToken = generateToken(user._id, refreshTokenExpires, tokenTypes.REFRESH);
+  // Save the generated refresh tokens
+  console.log('I am here')
   await saveToken(refreshToken, user.id, refreshTokenExpires, tokenTypes.REFRESH);
 
   return {

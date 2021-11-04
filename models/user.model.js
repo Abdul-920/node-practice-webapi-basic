@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const { roles } = require('../config/roles');
 
 const userSchema = new Schema(
   {
@@ -15,15 +16,15 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    userRole: {
+    role: {
       type: String,
-      enum: ["Parent", "Child"],
+      enum: roles,
       default: "Parent",
     },
-    families: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Family',
-    }]
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

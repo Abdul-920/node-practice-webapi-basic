@@ -1,55 +1,71 @@
 const { validationResult } = require("express-validator/check");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const catchAsync = require("../utils/catchAsync");
 const { User } = require("../models");
-const { emailService, authService } = require("../services");
+const {
+  emailService,
+  authService,
+  userService,
+  tokenService,
+} = require("../services");
+const httpStatus = require("http-status");
+// Max
+// exports.signup = (req, res, next) => {
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     const error = new Error("Validation failed.");
+//     error.statusCode = 422;
+//     error.data = errors.array();
+//     throw error;
+//   }
+//   const email = req.body.email;
+//   const name = req.body.name;
+//   const password = req.body.password;
+//   bcrypt
+//     .hash(password, 12)
+//     .then((hashedPw) => {
+//       const user = new User({
+//         email: email,
+//         password: hashedPw,
+//         name: name,
+//       });
+//       return user.save();
+//     })
+//     .then((result) => {
+//       console.log(process.env.JWT_SECRET, process.env.JWT_ACCESS_EXPIRATION_MINUTES)
+//       const token = jwt.sign(
+//         {
+//           email: email,
+//           userId: result._id,
+//         },
+//         process.env.JWT_SECRET,
+//         { expiresIn: "1h" }
+//       );
+//       res.status(201).json({
+//         message: "User created!",
+//         data: result,
+//         token: token,
+//       });
+//     })
+//     .catch((err) => {
+//       if (!err.statusCode) {
+//         err.statusCode = 500;
+//       }
+//       next(err);
+//     });
+// };
 
-exports.signup = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const error = new Error("Validation failed.");
-    error.statusCode = 422;
-    error.data = errors.array();
-    throw error;
-  }
-  const email = req.body.email;
-  const name = req.body.name;
-  const password = req.body.password;
-  bcrypt
-    .hash(password, 12)
-    .then((hashedPw) => {
-      const user = new User({
-        email: email,
-        password: hashedPw,
-        name: name,
-      });
-      return user.save();
-    })
-    .then((result) => {
-      console.log(process.env.JWT_SECRET, process.env.JWT_ACCESS_EXPIRATION_MINUTES)
-      const token = jwt.sign(
-        {
-          email: email,
-          userId: result._id,
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
-      );
-      res.status(201).json({
-        message: "User created!",
-        data: result,
-        token: token,
-      });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
-};
+const signUp = catchAsync(async (req, res, next) => {
+  console.log("exports.signup in auth controller");
+  const user = await userService.createUser(req.body);
+  console.log("generated User in auth controller", user);
+  const tokens = await tokenService.generateAuthTokens(user);
+  console.log("generated Token in auth controller", tokens);
+  res.status(httpStatus.CREATED).send({ message: 'User Registered Successfully', user, tokens });
+});
 
-exports.login = (req, res, next) => {
+const login = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   let loadedUser;
@@ -91,9 +107,9 @@ exports.login = (req, res, next) => {
     });
 };
 
-exports.forgotPassword = async (req, res, next) => {
+const forgotPassword = async (req, res, next) => {
   const email = req.body.email;
-  console.log(req.body.email)
+  console.log(req.body.email);
   const errors = validationResult(req);
   try {
     if (!errors.isEmpty()) {
@@ -110,7 +126,10 @@ exports.forgotPassword = async (req, res, next) => {
     }
 
     //const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body.email);
-    await emailService.sendResetPasswordEmail(req.body.email, "resetPasswordToken");
+    await emailService.sendResetPasswordEmail(
+      req.body.email,
+      "resetPasswordToken"
+    );
     // res.status(httpStatus.NO_CONTENT).send();
     res.status(200).json({
       message: "Email has been sent!",
@@ -121,8 +140,25 @@ exports.forgotPassword = async (req, res, next) => {
   }
 };
 
-exports.verifyEmail = async (req, res) => {
-  console.log('req.query.token in auth.controller', req.query.token)
+const sendVerificationEmail = catchAsync(async (req, res) => {
+  const verifyEmailToken = await tokenService.generateVerifyEmailToken(req.user);
+  await emailService.sendVerificationEmail(req.user.email, verifyEmailToken);
+  res.status(httpStatus.NO_CONTENT).send();
+});
+
+const verifyEmail = catchAsync(async (req, res) => {
   await authService.verifyEmail(req.query.token);
-  res.status(200).send();
+  res.status(httpStatus.NO_CONTENT).send();
+});
+
+
+module.exports = {
+  signUp,
+  login,
+  
+  
+  forgotPassword,
+  
+  sendVerificationEmail,
+  verifyEmail,
 };

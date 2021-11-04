@@ -4,28 +4,20 @@ const { body } = require("express-validator/check");
 const { User } = require("../models");
 const { authController } = require('../controllers');
 const { authValidation } = require('../validations');
+const isAuth = require('../middleware/auth');
 
 const router = express.Router();
 
-router.put(
-  "/signup",
-  authValidation.signUp,
-  authController.signup
-);
-
-router.post("/login", authController.login);
-router.post(
-  "/forgot-password",
-  [body("email").isEmail().withMessage("Please enter a valid email.")],
-  authController.forgotPassword
-);
+router.post("/signup", authValidation.signUp, authController.signUp);
+router.post("/login", isAuth('hi'), authController.login);
+router.post("/forgot-password", [body("email").isEmail().withMessage("Please enter a valid email.")],authController.forgotPassword);
 
 
 //router.post('/reset-password', authController.resetPassword);
 // router.post('/logout', validate(authValidation.logout), authController.logout);
 // router.post('/refresh-tokens', validate(authValidation.refreshTokens), authController.refreshTokens);
-// router.post('/send-verification-email', auth(), authController.sendVerificationEmail);
-router.post('/verify-email', authValidation.verifyEmail , authController.verifyEmail);
+router.post('/send-verification-email', authController.sendVerificationEmail);
+router.post('/verify-email', isAuth, authValidation.verifyEmail , authController.verifyEmail);
 
 module.exports = router;
 
@@ -39,7 +31,7 @@ module.exports = router;
 /**
  * @swagger
  * /auth/signup:
- *   put:
+ *   post:
  *     summary: Register as user
  *     tags: [Auth]
  *     requestBody:
@@ -76,13 +68,12 @@ module.exports = router;
  *             schema:
  *               type: object
  *               properties:
- *                 message:
- *                  type: string
- *                  description: User Created Successfully
+ *                 message: 
+ *                   type: string
  *                 data:
  *                   $ref: '#/components/schemas/User'
- *                 token:
- *                   type: string
+ *                 tokens:
+ *                   $ref: '#/components/schemas/AuthTokens'
  *       "400":
  *         $ref: '#/components/responses/DuplicateEmail'
  */
@@ -163,4 +154,47 @@ module.exports = router;
  *         description: No content
  *       "404":
  *         $ref: '#/components/responses/NotFound'
+ */
+
+/**
+ * @swagger
+ * /auth/send-verification-email:
+ *   post:
+ *     summary: Send verification email
+ *     description: An email will be sent to verify email.
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       "204":
+ *         description: No content
+ *       "401":
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+
+/**
+ * @swagger
+ * /auth/verify-email:
+ *   post:
+ *     summary: verify email
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The verify email token
+ *     responses:
+ *       "204":
+ *         description: No content
+ *       "401":
+ *         description: verify email failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               code: 401
+ *               message: verify email failed
  */
