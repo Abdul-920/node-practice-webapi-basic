@@ -13,7 +13,7 @@ router.post("/login", isAuth('hi'), authController.login);
 router.post("/forgot-password", [body("email").isEmail().withMessage("Please enter a valid email.")],authController.forgotPassword);
 
 
-//router.post('/reset-password', authController.resetPassword);
+// router.post('/reset-password', authController.resetPassword);
 // router.post('/logout', validate(authValidation.logout), authController.logout);
 // router.post('/refresh-tokens', validate(authValidation.refreshTokens), authController.refreshTokens);
 router.post('/send-verification-email', authController.sendVerificationEmail);

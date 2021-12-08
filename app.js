@@ -13,6 +13,7 @@ const apiDocRoute = require("./routes/docs");
 const authRoutes = require("./routes/auth.routes");
 const feedRoutes = require("./routes/feed.routes");
 const familyRoutes = require("./routes/family.routes");
+const stubRoutes = require("./routes/stub.routes");
 
 const app = express();
 
@@ -63,6 +64,7 @@ app.use("/api-docs", apiDocRoute);
 app.use("/auth", authRoutes);
 app.use("/feed", feedRoutes);
 app.use("/family", familyRoutes);
+app.use("/stub", stubRoutes);
 
 // its a special middleware that triggers when next(error) is called. It skips all the other middleware in between
 // inside async code we use next(new error) while in sync code just throw new error
@@ -74,18 +76,19 @@ app.use((error, req, res, next) => {
   res.status(status).json({ code: status, message: message, data: data });
 });
 
-mongoose
-  .connect(
-    "mongodb+srv://AbdulSamad:FRKZCzesJNFYZ6rG@mobileappcluster.u7sel.mongodb.net/Usrati?retryWrites=true&w=majority",
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
-  .then((result) => {
-    console.log("Connection Established With Mongoose");
-    app.listen(3000);
-  })
-  .catch((err) =>
-    console.log("Error Establishing Connection With Mongoose", err)
-  );
+app.listen(3000);
+// mongoose
+//   .connect(
+//     "mongodb+srv://AbdulSamad:FRKZCzesJNFYZ6rG@mobileappcluster.u7sel.mongodb.net/Usrati?retryWrites=true&w=majority",
+//     {
+//       useNewUrlParser: true,
+//       useUnifiedTopology: true,
+//     }
+//   )
+//   .then((result) => {
+//     console.log("Connection Established With Mongoose");
+//     app.listen(3000);
+//   })
+//   .catch((err) =>
+//     console.log("Error Establishing Connection With Mongoose", err)
+//   );
